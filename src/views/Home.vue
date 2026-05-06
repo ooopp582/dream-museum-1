@@ -58,7 +58,7 @@ const modules = [
   isolation: isolate;
   color: #ffffff;
   background-image:
-    linear-gradient(rgba(3, 7, 18, 0.48), rgba(3, 7, 18, 0.72)),
+    linear-gradient(rgba(8, 15, 30, 0.18), rgba(8, 15, 30, 0.34)),
     url('/src/assets/background.jpg');
   background-size: auto, cover;
   background-repeat: no-repeat, no-repeat;
@@ -71,8 +71,27 @@ const modules = [
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(circle at 50% 44%, rgba(255, 255, 255, 0.18), transparent 32%),
-    radial-gradient(circle at 50% 50%, rgba(3, 7, 18, 0), rgba(3, 7, 18, 0.52) 72%);
+    radial-gradient(ellipse at 32% 28%, rgba(244, 114, 182, 0.26), transparent 34%),
+    radial-gradient(ellipse at 72% 34%, rgba(125, 211, 252, 0.24), transparent 36%),
+    radial-gradient(ellipse at 50% 62%, rgba(250, 204, 21, 0.14), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), rgba(3, 7, 18, 0.18) 76%);
+  mix-blend-mode: screen;
+}
+
+.home-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.95) 0 1px, transparent 2px),
+    radial-gradient(circle at 84% 12%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 23% 78%, rgba(255, 255, 255, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 82%, rgba(255, 255, 255, 0.78) 0 1px, transparent 2px),
+    radial-gradient(circle at 94% 48%, rgba(255, 255, 255, 0.72) 0 1px, transparent 2px);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .top-actions {
@@ -112,66 +131,55 @@ const modules = [
   grid-area: 1 / 1;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 54% 46%, rgba(255, 255, 255, 0.24), rgba(186, 230, 253, 0.16) 26%, rgba(125, 211, 252, 0.08) 50%, transparent 72%);
-  filter: blur(28px);
-  opacity: 0.9;
+    conic-gradient(from 306deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.18) 30deg, rgba(147, 197, 253, 0.18) 58deg, transparent 92deg, transparent 360deg),
+    radial-gradient(circle at 58% 48%, rgba(244, 114, 182, 0.13), rgba(186, 230, 253, 0.14) 30%, rgba(125, 211, 252, 0.08) 54%, transparent 74%);
+  filter: blur(30px);
+  opacity: 0.96;
 }
 
 .crescent {
   position: relative;
   grid-area: 1 / 1;
-  width: min(58vw, 690px);
+  width: min(60vw, 720px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.74), rgba(186, 230, 253, 0.18) 11%, transparent 22%),
-    radial-gradient(circle at 66% 18%, rgba(255, 255, 255, 0.72), rgba(221, 245, 255, 0.18) 5%, transparent 13%),
-    radial-gradient(circle at 78% 50%, rgba(255, 255, 255, 0.92), rgba(186, 230, 253, 0.4) 5%, transparent 12%),
-    radial-gradient(circle at 48% 50%, rgba(147, 197, 253, 0.18), rgba(14, 165, 233, 0.08) 36%, rgba(255, 255, 255, 0.04) 61%, transparent 74%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(125, 211, 252, 0.02) 38%, rgba(255, 255, 255, 0.1));
+  background: transparent;
   box-shadow:
-    inset 24px 24px 42px rgba(255, 255, 255, 0.12),
-    inset -10px 0 18px rgba(255, 255, 255, 0.82),
-    inset -32px 0 46px rgba(191, 240, 255, 0.5),
-    inset -92px -18px 96px rgba(14, 165, 233, 0.16),
-    inset 0 0 86px rgba(255, 255, 255, 0.09),
-    0 0 42px rgba(240, 249, 255, 0.56),
-    0 0 110px rgba(186, 230, 253, 0.4),
-    0 0 190px rgba(125, 211, 252, 0.22);
-  filter: blur(0.16px) saturate(1.08);
+    0 0 56px rgba(240, 249, 255, 0.24),
+    0 0 150px rgba(125, 211, 252, 0.16);
   opacity: 0.98;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .crescent::before {
   content: '';
   position: absolute;
-  inset: 2.5% 12% 2.5% -10%;
+  inset: -1.5%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 60% 38%, rgba(255, 255, 255, 0.1), transparent 17%),
-    radial-gradient(circle at 42% 58%, rgba(56, 189, 248, 0.1), transparent 24%),
-    radial-gradient(circle at 56% 45%, rgba(12, 18, 30, 0.16), rgba(4, 8, 18, 0.72) 62%, rgba(4, 8, 18, 0.9) 100%),
-    url('/src/assets/background.jpg') center / cover no-repeat;
-  filter: brightness(0.48) saturate(1.02) blur(1px);
+    conic-gradient(from 306deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.05) 18deg, rgba(255, 255, 255, 0.92) 42deg, rgba(186, 230, 253, 0.38) 62deg, transparent 94deg, transparent 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 21px), #000 calc(100% - 19px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 21px), #000 calc(100% - 19px));
+  filter: blur(5px);
   box-shadow:
-    20px 0 36px rgba(3, 7, 18, 0.2),
-    inset -18px 0 28px rgba(255, 255, 255, 0.12),
-    inset 18px 12px 32px rgba(125, 211, 252, 0.07);
+    0 0 28px rgba(240, 249, 255, 0.72),
+    0 0 82px rgba(186, 230, 253, 0.36);
+  mix-blend-mode: screen;
 }
 
 .crescent::after {
   content: '';
   position: absolute;
-  inset: -2.5%;
+  inset: 0.5%;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at 28% 18%, rgba(255, 255, 255, 0.62), transparent 13%),
-    radial-gradient(ellipse at 37% 30%, rgba(255, 255, 255, 0.28), transparent 18%),
-    conic-gradient(from 305deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.1) 22deg, rgba(255, 255, 255, 0.9) 43deg, rgba(186, 230, 253, 0.42) 58deg, transparent 90deg, transparent 360deg);
-  filter: blur(3.4px);
+    radial-gradient(ellipse at 28% 18%, rgba(255, 255, 255, 0.54), transparent 12%),
+    radial-gradient(ellipse at 66% 22%, rgba(255, 255, 255, 0.4), transparent 9%),
+    conic-gradient(from 312deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.16) 28deg, rgba(255, 255, 255, 0.86) 45deg, rgba(244, 114, 182, 0.16) 58deg, rgba(125, 211, 252, 0.24) 70deg, transparent 96deg, transparent 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px), #000 calc(100% - 1px), transparent 100%);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px), #000 calc(100% - 1px), transparent 100%);
+  filter: blur(1.4px);
   mix-blend-mode: screen;
-  transform: rotate(2deg);
+  transform: rotate(1deg);
 }
 
 .home-content {
