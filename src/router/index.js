@@ -5,6 +5,8 @@ import Art from '../views/Art.vue'
 import Profile from '../views/Profile.vue'
 import ExhibitDetail from '../views/ExhibitDetail.vue'
 
+const scrollPositions = new Map()
+
 const routes = [
   {
     path: '/',
@@ -39,7 +41,34 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+
+    const storedPosition = scrollPositions.get(to.fullPath)
+    if (storedPosition) {
+      return storedPosition
+    }
+
+    if (to.path === from.path) {
+      return false
+    }
+
+    return { top: 0 }
+  }
+})
+
+router.beforeEach((to, from, next) => {
+  if (from.fullPath) {
+    scrollPositions.set(from.fullPath, {
+      left: window.scrollX,
+      top: window.scrollY
+    })
+  }
+
+  next()
 })
 
 export default router

@@ -4,6 +4,7 @@
     <div class="links">
       <router-link to="/film" class="link">电影馆</router-link>
       <router-link to="/art" class="link">画作馆</router-link>
+      <router-link to="/dreams" class="link">大众梦境</router-link>
       <router-link to="/profile" class="link">个人中心</router-link>
     </div>
   </nav>
@@ -33,11 +34,15 @@
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 1.5px;
+  white-space: nowrap;
 }
 
 .links {
   display: flex;
-  gap: 28px;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .link {
@@ -47,6 +52,7 @@
   padding: 6px 8px;
   border-radius: 999px;
   transition: color 0.2s ease, background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .link:hover,
@@ -57,20 +63,23 @@
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 14px 16px;
-    gap: 12px;
+    padding: 12px 14px;
+    gap: 10px;
+    align-items: flex-start;
   }
 
   .logo {
-    font-size: 16px;
+    font-size: 15px;
+    line-height: 28px;
   }
 
   .links {
-    gap: 10px;
+    gap: 6px;
   }
 
   .link {
-    font-size: 13px;
+    font-size: 12px;
+    padding: 6px 7px;
   }
 }
 </style>

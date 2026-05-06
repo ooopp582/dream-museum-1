@@ -1,6 +1,6 @@
 <template>
   <div class="detail-page">
-    <div class="hero" :style="{ background: item.background }"></div>
+    <div class="hero"></div>
 
     <section class="detail-content">
       <p class="type">{{ isFilm ? 'FILM DETAIL' : 'ART DETAIL' }}</p>
@@ -40,11 +40,13 @@ const item = computed(() => {
 .detail-page {
   min-height: 100vh;
   padding-top: 72px;
+  background: #091018;
 }
 
 .hero {
   height: 42vh;
   width: 100%;
+  background: #101a26;
 }
 
 .detail-content {

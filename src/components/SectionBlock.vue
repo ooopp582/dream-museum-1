@@ -1,17 +1,19 @@
 <template>
   <section ref="sectionRef" class="spiral-section">
     <div ref="pinRef" class="pin-wrap">
-      <router-link ref="cardRef" :to="detailTo" class="section">
-        <div class="global-bg" :style="{ backgroundImage: `url(${globalBackground})` }"></div>
-        <div ref="bgRef" class="bg" :style="{ background: bg }"></div>
-        <div class="overlay"></div>
+      <router-link v-slot="{ href, navigate }" :to="detailTo" custom>
+        <a ref="cardRef" :href="href" class="section" @click="navigate">
+          <div class="global-bg" :style="{ backgroundImage: `url(${globalBackground})` }"></div>
+          <div ref="bgRef" class="bg" :style="{ background: bg }"></div>
+          <div class="overlay"></div>
 
-        <div ref="contentRef" class="content">
-          <p class="tag">{{ tag }}</p>
-          <h2>{{ title }}</h2>
-          <p class="desc">{{ desc }}</p>
-          <span class="jump">进入展厅</span>
-        </div>
+          <div ref="contentRef" class="content">
+            <p class="tag">{{ tag }}</p>
+            <h2>{{ title }}</h2>
+            <p class="desc">{{ desc }}</p>
+            <span class="jump">进入展厅</span>
+          </div>
+        </a>
       </router-link>
     </div>
   </section>
@@ -46,6 +48,7 @@ let transformTween = null
 let depthTween = null
 let introTween = null
 let parallaxTween = null
+let glowTween = null
 
 onMounted(() => {
   if (!sectionRef.value || !cardRef.value || !contentRef.value || !bgRef.value || !pinRef.value) {
@@ -53,15 +56,14 @@ onMounted(() => {
   }
 
   const direction = props.index % 2 === 0 ? 1 : -1
-  const xShift = 180 + props.index * 36
-  const yShift = -150 - props.index * 32
-  const zDepth = -420 - props.index * 70
-  const zRotate = 20 + props.index * 4
-  const yRotate = 34 + props.index * 5
+  const entryX = direction * (190 + props.index * 24)
+  const exitX = direction * -(180 + props.index * 30)
+  const entryRotateY = direction * -38
+  const exitRotateY = direction * 42
 
   introTween = gsap.fromTo(
     contentRef.value,
-    { autoAlpha: 0, y: 48, filter: 'blur(10px)' },
+    { autoAlpha: 0, y: 46, filter: 'blur(10px)' },
     {
       autoAlpha: 1,
       y: 0,
@@ -70,25 +72,29 @@ onMounted(() => {
       ease: 'power2.out',
       scrollTrigger: {
         trigger: sectionRef.value,
-        start: 'top 72%'
+        start: 'top 76%'
       }
     }
   )
 
-  depthTween = gsap.to(pinRef.value, {
-    z: 170,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: sectionRef.value,
-      start: 'top bottom',
-      end: 'top 35%',
-      scrub: true
+  depthTween = gsap.fromTo(
+    pinRef.value,
+    { z: -120 },
+    {
+      z: 120,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: sectionRef.value,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true
+      }
     }
-  })
+  )
 
   parallaxTween = gsap.to(bgRef.value, {
-    scale: 1.22,
-    yPercent: -8,
+    scale: 1.24,
+    yPercent: -10,
     ease: 'none',
     scrollTrigger: {
       trigger: sectionRef.value,
@@ -98,29 +104,57 @@ onMounted(() => {
     }
   })
 
-  transformTween = gsap.to(cardRef.value, {
-    scale: 0.58,
-    x: direction * xShift,
-    y: yShift,
-    z: zDepth,
-    rotateZ: direction * zRotate,
-    rotateY: direction * yRotate,
-    rotateX: -12,
-    transformOrigin: 'center center',
-    ease: 'none',
-    scrollTrigger: {
-      trigger: sectionRef.value,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-      invalidateOnRefresh: true
+  transformTween = gsap.fromTo(
+    cardRef.value,
+    {
+      autoAlpha: 0.5,
+      scale: 0.64,
+      x: entryX,
+      y: 260,
+      z: -820,
+      rotateX: 26,
+      rotateY: entryRotateY,
+      rotateZ: direction * -18,
+      transformOrigin: 'center center'
+    },
+    {
+      autoAlpha: 0.96,
+      scale: 1.02,
+      x: exitX,
+      y: -240,
+      z: 160,
+      rotateX: -14,
+      rotateY: exitRotateY,
+      rotateZ: direction * 22,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: sectionRef.value,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 0.65,
+        invalidateOnRefresh: true
+      }
     }
-  })
+  )
 
+  glowTween = gsap.fromTo(
+    cardRef.value,
+    { boxShadow: '0 14px 34px rgba(0, 0, 0, 0.34)' },
+    {
+      boxShadow: '0 38px 88px rgba(0, 0, 0, 0.56)',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: sectionRef.value,
+        start: 'top 78%',
+        end: 'bottom 18%',
+        scrub: true
+      }
+    }
+  )
 })
 
 onUnmounted(() => {
-  for (const tween of [transformTween, depthTween, introTween, parallaxTween]) {
+  for (const tween of [transformTween, depthTween, introTween, parallaxTween, glowTween]) {
     if (tween?.scrollTrigger) tween.scrollTrigger.kill()
     if (tween) tween.kill()
   }
@@ -130,12 +164,12 @@ onUnmounted(() => {
 <style scoped>
 .spiral-section {
   position: relative;
-  height: 165vh;
-  margin: 5vh 0 10vh;
+  height: 148vh;
+  margin: 0 0 4vh;
 }
 
 .spiral-section:last-child {
-  height: 102vh;
+  height: 118vh;
   margin-bottom: 0;
 }
 
@@ -145,23 +179,33 @@ onUnmounted(() => {
   height: calc(100vh - 72px);
   display: grid;
   place-items: center;
-  perspective: 2200px;
+  perspective: 1800px;
   transform-style: preserve-3d;
+  pointer-events: none;
 }
 
 .section {
   display: block;
-  width: min(780px, calc(100vw - 240px));
+  width: min(960px, calc(100vw - 132px));
   position: relative;
   aspect-ratio: 16 / 10;
   min-height: auto;
   margin: 0 auto;
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.42);
   transform-style: preserve-3d;
-  will-change: transform;
+  will-change: transform, opacity, box-shadow;
+  pointer-events: auto;
+}
+
+.section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
 }
 
 .global-bg,
@@ -173,7 +217,7 @@ onUnmounted(() => {
 }
 
 .global-bg {
-  opacity: 0.26;
+  opacity: 0.22;
   filter: blur(1px);
 }
 
@@ -182,7 +226,7 @@ onUnmounted(() => {
   inset: 0;
   background:
     radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.18), transparent 44%),
-    linear-gradient(180deg, rgba(6, 8, 15, 0.1), rgba(6, 8, 15, 0.86));
+    linear-gradient(180deg, rgba(6, 8, 15, 0.08), rgba(6, 8, 15, 0.88));
 }
 
 .content {
@@ -222,24 +266,26 @@ h2 {
   background: rgba(255, 255, 255, 0.18);
   font-size: 14px;
 }
+
 @media (max-width: 768px) {
   .spiral-section {
-    height: 150vh;
-    margin: 3vh 0 7vh;
+    height: 138vh;
+    margin: 0 0 3vh;
   }
 
   .spiral-section:last-child {
-    height: 96vh;
+    height: 105vh;
     margin-bottom: 0;
   }
 
   .pin-wrap {
     top: 64px;
     height: calc(100vh - 64px);
+    perspective: 1400px;
   }
 
   .section {
-    width: min(80vw, 480px);
+    width: min(90vw, 560px);
     aspect-ratio: 16 / 10;
     min-height: auto;
     border-radius: 16px;
