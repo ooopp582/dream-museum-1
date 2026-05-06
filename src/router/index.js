@@ -1,16 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// 导入你的三个页面组件
 import Film from '../views/Film.vue'
 import Art from '../views/Art.vue'
+import Dreams from '../views/Dreams.vue'
 import Profile from '../views/Profile.vue'
 import ExhibitDetail from '../views/ExhibitDetail.vue'
-
-const scrollPositions = new Map()
 
 const routes = [
   {
     path: '/',
-    redirect: '/film' // 默认打开电影馆页面
+    redirect: '/film'
   },
   {
     path: '/film',
@@ -21,6 +19,11 @@ const routes = [
     path: '/art',
     name: 'Art',
     component: Art
+  },
+  {
+    path: '/dreams',
+    name: 'Dreams',
+    component: Dreams
   },
   {
     path: '/profile',
@@ -47,28 +50,12 @@ const router = createRouter({
       return savedPosition
     }
 
-    const storedPosition = scrollPositions.get(to.fullPath)
-    if (storedPosition) {
-      return storedPosition
-    }
-
     if (to.path === from.path) {
       return false
     }
 
     return { top: 0 }
   }
-})
-
-router.beforeEach((to, from, next) => {
-  if (from.fullPath) {
-    scrollPositions.set(from.fullPath, {
-      left: window.scrollX,
-      top: window.scrollY
-    })
-  }
-
-  next()
 })
 
 export default router
