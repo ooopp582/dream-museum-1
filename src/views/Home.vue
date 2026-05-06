@@ -10,8 +10,10 @@
     </div>
 
     <div class="home-content">
-      <h1>梦境博物馆</h1>
-      <p>电影馆、画作馆、大众梦境、个人中心</p>
+      <div class="title-lockup">
+        <h1>Dreamscape Museum</h1>
+        <p class="chinese-title">梦境博物馆</p>
+      </div>
 
       <nav class="module-grid" aria-label="模块入口">
         <router-link v-for="item in modules" :key="item.to" :to="item.to" class="module-link">
@@ -188,19 +190,33 @@ const modules = [
   padding: 52px 0 32px;
 }
 
-h1 {
-  margin: 0 0 12px;
-  font-size: clamp(46px, 8vw, 86px);
-  line-height: 1.08;
-  font-weight: 500;
-  text-shadow: 0 6px 26px rgba(0, 0, 0, 0.72);
+.title-lockup {
+  margin-bottom: 58px;
 }
 
-.home-content > p {
-  margin: 0 auto 36px;
+h1 {
+  margin: 0;
+  font-family: 'Brush Script MT', 'Segoe Script', 'Lucida Handwriting', cursive;
+  font-size: clamp(72px, 12vw, 138px);
+  line-height: 0.88;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.82),
+    0 0 22px rgba(186, 230, 253, 0.62),
+    0 7px 30px rgba(0, 0, 0, 0.62);
+}
+
+.chinese-title {
+  margin: 20px auto 0;
   color: rgba(255, 255, 255, 0.86);
-  font-size: clamp(16px, 2.2vw, 22px);
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.72);
+  font-size: clamp(22px, 3vw, 34px);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.48),
+    0 4px 18px rgba(0, 0, 0, 0.72);
 }
 
 .module-grid {
@@ -253,6 +269,10 @@ h1 {
 
   .home-content {
     padding-top: 34px;
+  }
+
+  .title-lockup {
+    margin-bottom: 42px;
   }
 
   .module-grid {
