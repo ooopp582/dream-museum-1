@@ -1,9 +1,9 @@
 <template>
-  <div ref="pageRef" class="page" :style="pageStyle">
+  <div class="page" :style="pageStyle">
     <header class="intro">
       <p class="label">FILM GALLERY</p>
       <h1>电影馆</h1>
-      <p>像展览一样，从上往下浏览每个电影板块，点击可进入独立页面。</p>
+      <p>像展览一样，从上往下浏览每一个电影板块，点击可进入独立页面。</p>
     </header>
 
     <SectionBlock
@@ -21,87 +21,11 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
 import SectionBlock from '../components/SectionBlock.vue'
+import { useScrollBackgroundMotion } from '../composables/useScrollBackgroundMotion'
 import { filmItems } from '../data/exhibits'
 
-const pageRef = ref(null)
-const pageStyle = ref({ '--bg-shift': '0px' })
-const WHEEL_STEP_THRESHOLD = 760
-const STEP_FACTOR = 0.72
-const MAX_WHEEL_DELTA = 120
-const virtualIndex = ref(0)
-let parallaxFrame = null
-let currentBgShift = 0
-
-const getSectionAnchors = () => {
-  if (!pageRef.value) return []
-  return [...pageRef.value.querySelectorAll('.spiral-section')].map((el) => el.offsetTop)
-}
-
-const getCurrentIndex = (anchors) => {
-  const currentY = window.scrollY + 110
-  let index = 0
-  for (let i = 0; i < anchors.length; i += 1) {
-    if (currentY >= anchors[i]) index = i
-  }
-  return index
-}
-
-const syncActiveIndexFromScroll = () => {
-  const anchors = getSectionAnchors()
-  if (!anchors.length) return
-  virtualIndex.value = getCurrentIndex(anchors)
-}
-
-const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2
-
-const handleWheel = (event) => {
-  const anchors = getSectionAnchors()
-  if (!anchors.length) return
-  const firstAnchorY = anchors[0] - 72
-  const lastAnchorY = anchors[anchors.length - 1] - 72
-  const currentY = window.scrollY
-
-  if ((currentY <= firstAnchorY + 2 && event.deltaY < 0) || (currentY >= lastAnchorY - 2 && event.deltaY > 0)) {
-    syncActiveIndexFromScroll()
-    return
-  }
-
-  event.preventDefault()
-
-  // 以“5格完成一个板块”为单位推进，正负方向都连续可逆
-  const safeDeltaY = Math.sign(event.deltaY) * Math.min(MAX_WHEEL_DELTA, Math.abs(event.deltaY))
-  const indexDelta = (safeDeltaY / WHEEL_STEP_THRESHOLD) * STEP_FACTOR
-  virtualIndex.value = Math.max(0, Math.min(anchors.length - 1, virtualIndex.value + indexDelta))
-
-  const startIndex = Math.floor(virtualIndex.value)
-  const endIndex = Math.min(anchors.length - 1, Math.ceil(virtualIndex.value))
-  const localT = virtualIndex.value - startIndex
-  const progressRatio = easeInOutSine(localT)
-  const startY = anchors[startIndex] - 72
-  const endY = anchors[endIndex] - 72
-  const y = startY + (endY - startY) * progressRatio
-  window.scrollTo(0, y)
-}
-
-const animateParallax = () => {
-  const targetBgShift = window.scrollY * -0.10
-  currentBgShift += (targetBgShift - currentBgShift) * 0.028
-  pageStyle.value = { '--bg-shift': `${currentBgShift.toFixed(2)}px` }
-  parallaxFrame = requestAnimationFrame(animateParallax)
-}
-
-onMounted(() => {
-  syncActiveIndexFromScroll()
-  animateParallax()
-  window.addEventListener('wheel', handleWheel, { passive: false })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('wheel', handleWheel)
-  if (parallaxFrame) cancelAnimationFrame(parallaxFrame)
-})
+const pageStyle = useScrollBackgroundMotion()
 </script>
 
 <style scoped>
@@ -111,9 +35,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0;
-  background-image: url('/src/assets/background.jpg');
-  background-size: cover;
-  background-position: center calc(50% + var(--bg-shift, 0px));
+  background-image:
+    linear-gradient(rgba(6, 8, 15, 0.48), rgba(6, 8, 15, 0.68)),
+    url('/src/assets/background.jpg');
+  background-size: auto, cover;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center center, center var(--bg-position-y);
+  min-height: 100vh;
+  overflow-x: clip;
 }
 
 .intro {
