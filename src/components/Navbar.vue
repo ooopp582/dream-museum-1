@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar">
-    <div class="logo">梦境博物馆</div>
+    <router-link to="/" class="logo">梦境博物馆</router-link>
     <div class="links">
       <router-link to="/film" class="link">电影馆</router-link>
       <router-link to="/art" class="link">画作馆</router-link>

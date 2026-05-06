@@ -1,14 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home.vue'
 import Film from '../views/Film.vue'
 import Art from '../views/Art.vue'
 import Dreams from '../views/Dreams.vue'
 import Profile from '../views/Profile.vue'
 import ExhibitDetail from '../views/ExhibitDetail.vue'
 
+const galleryScrollPositions = new Map()
+
 const routes = [
   {
     path: '/',
-    redirect: '/film'
+    name: 'Home',
+    component: Home,
+    meta: {
+      hideNavbar: true
+    }
   },
   {
     path: '/film',
@@ -50,12 +57,38 @@ const router = createRouter({
       return savedPosition
     }
 
+    const isReturningToFilm = to.name === 'Film' && from.name === 'FilmDetail'
+    const isReturningToArt = to.name === 'Art' && from.name === 'ArtDetail'
+
+    if (isReturningToFilm || isReturningToArt) {
+      const storedPosition = galleryScrollPositions.get(to.name)
+      if (storedPosition) {
+        return new Promise((resolve) => {
+          setTimeout(() => resolve(storedPosition), 0)
+        })
+      }
+    }
+
     if (to.path === from.path) {
       return false
     }
 
     return { top: 0 }
   }
+})
+
+router.beforeEach((to, from, next) => {
+  const isLeavingFilmForDetail = from.name === 'Film' && to.name === 'FilmDetail'
+  const isLeavingArtForDetail = from.name === 'Art' && to.name === 'ArtDetail'
+
+  if (isLeavingFilmForDetail || isLeavingArtForDetail) {
+    galleryScrollPositions.set(from.name, {
+      left: window.scrollX,
+      top: window.scrollY
+    })
+  }
+
+  next()
 })
 
 export default router

@@ -1,6 +1,6 @@
 <template>
-  <div class="app-shell" :style="appStyle">
-    <Navbar />
+  <div class="app-shell">
+    <Navbar v-if="!route.meta.hideNavbar" />
     <main class="page-main">
       <router-view />
     </main>
@@ -8,10 +8,10 @@
 </template>
 
 <script setup>
+import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
-import { useScrollBackgroundMotion } from './composables/useScrollBackgroundMotion'
 
-const appStyle = useScrollBackgroundMotion()
+const route = useRoute()
 </script>
 
 <style scoped>
@@ -22,7 +22,7 @@ const appStyle = useScrollBackgroundMotion()
     url('./assets/background.jpg');
   background-size: auto, cover;
   background-repeat: no-repeat, no-repeat;
-  background-position: center center, center var(--bg-position-y);
+  background-position: center center, center bottom;
   color: #f2f4f8;
 }
 
