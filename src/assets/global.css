@@ -1,0 +1,45 @@
+/* 高透明 + 集中粉紫光 终极版 */
+button,
+input[type="button"],
+input[type="submit"],
+a[class*="btn"],
+a[class*="button"],
+[class*="btn"],
+[class*="button"],
+.module-button,
+.link,
+.router-link-exact-active,
+.router-link-active {
+  /* ✅ 背景透明度拉到极致 */
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  /* ✅ 光效集中，只在按钮边缘一圈发光，不扩散 */
+  box-shadow: 
+    0 0 8px rgba(255, 175, 220, 0.4),
+    0 0 16px rgba(160, 120, 255, 0.3),
+    inset 0 0 6px rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+a[class*="btn"]:hover,
+a[class*="button"]:hover,
+[class*="btn"]:hover,
+[class*="button"]:hover,
+.module-button:hover,
+.link:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-2px) !important;
+  /* hover时光效也集中增强，不扩散 */
+  box-shadow: 
+    0 0 10px rgba(255, 175, 220, 0.5),
+    0 0 20px rgba(160, 120, 255, 0.4),
+    inset 0 0 8px rgba(255, 255, 255, 0.08) !important;
+}
