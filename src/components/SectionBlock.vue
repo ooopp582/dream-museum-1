@@ -138,20 +138,24 @@ onMounted(() => {
   )
 
   glowTween = gsap.fromTo(
-    cardRef.value,
-    { boxShadow: '0 14px 34px rgba(0, 0, 0, 0.34)' },
-    {
-      boxShadow: '0 38px 88px rgba(0, 0, 0, 0.56)',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: sectionRef.value,
-        start: 'top 78%',
-        end: 'bottom 18%',
-        scrub: true
-      }
+  cardRef.value,
+  { 
+    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1), 0 14px 34px rgba(0,0,0,0.34), 0 0 15px rgba(170,140,255,0.08)' 
+  },
+  { 
+    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.15), 0 38px 88px rgba(0,0,0,0.56), 0 0 30px rgba(170,140,255,0.15)',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: sectionRef.value,
+      start: 'top 78%',
+      end: 'bottom 18%',
+      scrub: true
+    }
+  }
+)
     }
   )
-})
+
 
 onUnmounted(() => {
   for (const tween of [transformTween, depthTween, introTween, parallaxTween, glowTween]) {
@@ -193,10 +197,29 @@ onUnmounted(() => {
   margin: 0 auto;
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
   transform-style: preserve-3d;
   will-change: transform, opacity, box-shadow;
   pointer-events: auto;
+
+  /* ========== 1. 玻璃本体：半透磨砂底色 ========== */
+  background: rgba(255, 255, 255, 0.05); /* 极淡的底色，让磨砂有载体 */
+  backdrop-filter: blur(18px); /* 强力磨砂，模糊背景，做出玻璃朦胧感 */
+  -webkit-backdrop-filter: blur(18px);
+
+  /* ========== 2. 玻璃边框：不是白边，是柔和的反光边 ========== */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* 弱透明边框，不突兀 */
+
+  /* ========== 3. 核心！多层阴影做出「物理厚度」（和参考图一致） ========== */
+  box-shadow:
+    /* 内高光：玻璃上边缘的反光，模拟光线照在厚玻璃上的效果 */
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    /* 中层阴影：玻璃中间的下沉感，模拟厚度 */
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    /* 外层阴影：玻璃底部的投影，模拟实体块的厚度 */
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    /* 粉紫光晕：和你的导航栏呼应，强化氛围 */
+    0 0 25px rgba(170, 140, 255, 0.1);
+    
 }
 
 .section::after {

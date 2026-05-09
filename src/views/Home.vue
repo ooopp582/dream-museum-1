@@ -10,13 +10,16 @@
     </div>
 
     <div class="home-content">
-      <div class="title-lockup">
-        <h1>Dreamscape Museum</h1>
-        <p class="chinese-title">梦境博物馆</p>
-      </div>
+     <div class="title-lockup">
+      <img 
+      <img src="../assets/title2.png" 
+       alt="梦境博物馆" 
+      class="title-image">
+      <p class="chinese-title">梦境博物馆</p>
+</div>
 
       <nav class="module-grid" aria-label="模块入口">
-        <router-link v-for="item in modules" :key="item.to" :to="item.to" class="module-link">
+        <router-link v-for="item in modules" :key="item.to" :to="item.to" class="module-button">
           <span class="module-title">{{ item.title }}</span>
           <span class="module-desc">{{ item.desc }}</span>
         </router-link>
@@ -211,7 +214,7 @@ h1 {
 .chinese-title {
   margin: 20px auto 0;
   color: rgba(255, 255, 255, 0.86);
-  font-size: clamp(22px, 3vw, 34px);
+  font-size: clamp(22px, 3vw, 3px);
   letter-spacing: 0.18em;
   text-indent: 0.18em;
   text-shadow:
@@ -248,12 +251,14 @@ h1 {
 
 .module-title {
   font-size: 18px;
+  font-weight: 500;
 }
 
 .module-desc {
   color: rgba(255, 255, 255, 0.68);
   font-size: 13px;
   line-height: 1.35;
+  opacity: 0.8;
 }
 
 @media (max-width: 820px) {
@@ -284,5 +289,53 @@ h1 {
   .module-grid {
     grid-template-columns: 1fr;
   }
+}
+.title-image {
+  max-width: 200%;
+  max-height: 200px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
+  margin-top: 10px;
+  margin-left: -00px;
+  margin-bottom: 0px;
+  transform: rotate(5deg);
+}
+/* 模块按钮 - 发光毛玻璃效果 */
+.module-button {
+  padding: 16px 32px;
+  border-radius: 12px;
+  border: 1px solid rgba(150, 120, 255, 0.2);
+  background: rgba(138, 109, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  text-align: center;
+  box-shadow: 
+    0 0 15px rgba(150, 100, 255, 0.15),
+    inset 0 0 10px rgba(150, 100, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.module-button:hover {
+  background: rgba(150, 100, 255, 0.05);
+  border-color: rgba(150, 120, 255, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 5px 25px rgba(150, 100, 255, 0.3),
+    inset 0 0 15px rgba(150, 100, 255, 0.1);
+}
+
+/* 按钮标题和描述的文字样式 */
+.module-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.module-desc {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
 }
 </style>

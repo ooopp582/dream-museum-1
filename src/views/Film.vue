@@ -3,7 +3,7 @@
     <header class="intro">
       <p class="label">FILM GALLERY</p>
       <h1>电影馆</h1>
-      <p>像展览一样，从上往下浏览每一个电影板块，点击可进入独立页面。</p>
+      <p>在这里，你可以沉浸于梦境叙事的魅力，探索那些以梦为题材的电影作品。每一部影片都是一个独特的梦境世界，等待着你去发现和体验。</p>
     </header>
 
     <SectionBlock

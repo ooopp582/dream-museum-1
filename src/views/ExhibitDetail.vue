@@ -1,104 +1,110 @@
 <template>
-  <div class="detail-page">
-    <div class="hero"></div>
+  <div class="film-detail">
+    <!-- 左侧文字：页面左下角，不遮挡卡片 -->
+    <div class="detail-text">
+      <h1 class="detail-title">INCEPTION</h1>
+      <p class="detail-subtitle">梦境迷宫</p>
+      <p class="detail-content">
+        这部影片以梦境结构挑战观众的时间感。层层递进的空间与音效设计，让人像置身于意识展厅，逐层深入。
+      </p>
+    </div>
 
-    <section class="detail-content">
-      <p class="type">{{ isFilm ? 'FILM DETAIL' : 'ART DETAIL' }}</p>
-      <h1>{{ item.title }}</h1>
-      <p class="subtitle">{{ item.subtitle }}</p>
-      <p class="text">{{ item.content }}</p>
-      <router-link :to="isFilm ? '/film' : '/art'" class="back-link">
-        返回{{ isFilm ? '电影馆' : '画作馆' }}
-      </router-link>
-    </section>
+    <!-- 中间磨砂卡片：宽度60%，无按钮 -->
+    <div class="detail-wrapper"></div>
+
+    <!-- 🔥 返回按钮：固定在【整个页面右下角】 -->
+    <button class="module-button" @click="$router.back()">返回</button>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { artItems, filmItems } from '../data/exhibits'
 
-const route = useRoute()
-
-const isFilm = computed(() => route.path.startsWith('/film/'))
-
-const item = computed(() => {
-  const source = isFilm.value ? filmItems : artItems
-  return (
-    source.find((entry) => entry.id === route.params.id) ?? {
-      title: '未找到展品',
-      subtitle: 'NOT FOUND',
-      content: '该展品不存在或已被移除。',
-      background: 'linear-gradient(135deg, #0f172a, #334155)'
-    }
-  )
-})
 </script>
 
 <style scoped>
-.detail-page {
+.film-detail {
   min-height: 100vh;
-  padding-top: 72px;
-  background: #091018;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  background: transparent;
+  position: relative;
 }
 
-.hero {
-  height: 42vh;
-  width: 100%;
-  background: #101a26;
+/* 左下角文字样式 */
+.detail-text {
+  position: absolute;
+  left: 8%;
+  bottom: 12%;
+  max-width: 350px;
+  text-align: left;
+}
+
+/* 卡片：60%网页宽度 */
+.detail-wrapper {
+  width: 50vw;
+  aspect-ratio: 16/9;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 180, 220, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(170, 140, 255, 0.15);
+}
+
+/* 🔥 核心：按钮固定在【整个页面右下角】 */
+.module-button {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  z-index: 999;
+  padding: 12px 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 180, 220, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.module-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 原有文字样式不变 */
+.detail-title {
+  font-size: 50px;
+  color: #fff;
+  margin: 0 0 10px;
+  text-shadow: 0 0 15px rgba(255, 170, 220, 0.4);
+}
+
+.detail-subtitle {
+  font-size: 20px;
+  color: rgba(255, 200, 230, 0.9);
+  margin: 0 0 30px;
 }
 
 .detail-content {
-  width: min(980px, calc(100vw - 48px));
-  margin: 0 auto;
-  padding: 34px 0 70px;
-}
-
-.type {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
   margin: 0;
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.72);
 }
 
-h1 {
-  margin: 12px 0 8px;
-  font-size: clamp(32px, 6vw, 62px);
-}
-
-.subtitle {
-  margin: 0 0 14px;
-  font-size: 18px;
-  color: #93c5fd;
-}
-
-.text {
-  margin: 0;
-  line-height: 1.9;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.back-link {
-  display: inline-block;
-  margin-top: 24px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-}
-
+/* 移动端适配 */
 @media (max-width: 768px) {
-  .detail-page {
-    padding-top: 64px;
+  .detail-text {
+    position: static;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 90%;
   }
-
-  .hero {
-    height: 34vh;
+  .film-detail {
+    flex-direction: column;
+    padding: 40px 20px;
   }
-
-  .detail-content {
-    width: calc(100vw - 24px);
-    padding-top: 24px;
+  .detail-wrapper {
+    width: 90vw;
   }
 }
 </style>

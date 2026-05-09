@@ -3,7 +3,7 @@
     <header class="intro">
       <p class="label">ART GALLERY</p>
       <h1>画作馆</h1>
-      <p>纵向滚动浏览每一个画作板块，点击进入该画作的独立介绍页面。</p>
+      <p>在这里，你可以欣赏到那些充满想象力和创造力的画作，每一幅作品都承载着艺术家对梦境的独特诠释。</p>
     </header>
 
     <SectionBlock
