@@ -85,18 +85,23 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
 </script>
 
 <style scoped>
-/* ====================== 核心布局修改 ====================== */
+/* ====================== ✅ 核心修复：不遮挡 + 自适应 ====================== */
 .navbar {
-  position: fixed;
+  /* 关键1：Fixed 改为 Sticky 粘性定位，不脱离文档流，永远不遮挡内容 */
+  position: sticky;
   top: 0;
-  left: 0;
+  /* 关键2：完整宽度 + 自动适配，不溢出屏幕 */
   width: 100%;
+  box-sizing: border-box;
   z-index: 1000;
+
   display: flex;
   align-items: center;
-  /* 1. 移除两端对齐，改为logo+导航按钮挨在一起 */
   gap: 24px;
   padding: 16px 36px;
+  /* 关键3：小屏幕自动换行，不会挤变形 */
+  flex-wrap: wrap;
+
   background: linear-gradient(
     to right, 
     rgba(30, 31, 70, 0.598),
@@ -110,7 +115,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
     0 0 15px rgba(68, 7, 236, 0.1);
 }
 
-/* 2. 搜索框自动推到最右侧 */
+/* 搜索框自动靠右 */
 .search-container {
   margin-left: auto;
   position: relative;
@@ -148,7 +153,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   background: rgba(255, 255, 255, 0.14);
 }
 
-/* ====================== 搜索框样式修改（放大镜嵌入） ====================== */
+/* ====================== 搜索框样式 ====================== */
 .search-box {
   display: flex;
   align-items: center;
@@ -194,7 +199,6 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* 🔥 修改2：去掉按钮内边距和背景，只保留图标本身 */
 .search-btn {
   background: transparent;
   border: none;
@@ -202,13 +206,13 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 0; /* 去掉内边距，不让按钮额外占空间 */
-  border-radius: 0; /* 去掉圆形，避免溢出 */
+  padding: 0;
+  border-radius: 0;
   transition: color 0.2s ease;
 }
 
 .search-btn:hover {
-  color: #fff; /* 只变色，不加背景，避免hover时溢出 */
+  color: #fff;
 }
 
 .filter-menu {
@@ -237,17 +241,15 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   color: #fff;
 }
 
-/* 移动端适配 */
+/* ====================== ✅ 完美响应式适配 ====================== */
 @media (max-width: 768px) {
   .navbar {
-    padding: 12px 14px;
+    padding: 12px 16px;
     gap: 10px;
-    align-items: flex-start;
   }
 
   .logo {
-    font-size: 15px;
-    line-height: 28px;
+    font-size: 16px;
   }
 
   .links {
@@ -256,11 +258,12 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
 
   .link {
     font-size: 12px;
-    padding: 6px 7px;
+    padding: 4px 6px;
   }
 
-  .search-container {
-    display: none;
+  /* 小屏幕搜索框缩小，不隐藏 */
+  .search-box input {
+    width: 80px;
   }
 }
 </style>
