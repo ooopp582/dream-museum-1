@@ -46,6 +46,11 @@ const routes = [
     path: '/art/:id',
     name: 'ArtDetail',
     component: ExhibitDetail
+  },
+  {
+    path: '/dreams/:id',
+    name: 'DreamDetail',
+    component: ExhibitDetail
   }
 ]
 
@@ -59,8 +64,9 @@ const router = createRouter({
 
     const isReturningToFilm = to.name === 'Film' && from.name === 'FilmDetail'
     const isReturningToArt = to.name === 'Art' && from.name === 'ArtDetail'
+    const isReturningToDreams = to.name === 'Dreams' && from.name === 'DreamDetail'
 
-    if (isReturningToFilm || isReturningToArt) {
+    if (isReturningToFilm || isReturningToArt || isReturningToDreams) {
       const storedPosition = galleryScrollPositions.get(to.name)
       if (storedPosition) {
         return new Promise((resolve) => {
@@ -80,8 +86,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isLeavingFilmForDetail = from.name === 'Film' && to.name === 'FilmDetail'
   const isLeavingArtForDetail = from.name === 'Art' && to.name === 'ArtDetail'
+  const isLeavingDreamsForDetail = from.name === 'Dreams' && to.name === 'DreamDetail'
 
-  if (isLeavingFilmForDetail || isLeavingArtForDetail) {
+  if (isLeavingFilmForDetail || isLeavingArtForDetail || isLeavingDreamsForDetail) {
     galleryScrollPositions.set(from.name, {
       left: window.scrollX,
       top: window.scrollY

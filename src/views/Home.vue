@@ -11,7 +11,6 @@
 
     <div class="home-content">
      <div class="title-lockup">
-      <img 
       <img src="../assets/title2.png" 
        alt="梦境博物馆" 
       class="title-image">

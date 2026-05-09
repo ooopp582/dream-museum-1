@@ -8,9 +8,11 @@
 
     <section class="dream-grid" aria-label="大众梦境列表">
       <article v-for="dream in dreams" :key="dream.id" class="dream-card">
-        <div class="dream-visual" :style="{ background: dream.background }">
-          <span>{{ dream.subtitle }}</span>
-        </div>
+        <router-link :to="`/dreams/${dream.id}`" class="dream-visual-link">
+          <div class="dream-visual" :style="getDreamStyle(dream)">
+            <span>{{ dream.subtitle }}</span>
+          </div>
+        </router-link>
 
         <div class="dream-body">
           <div class="dream-heading">
@@ -31,7 +33,7 @@
           </div>
 
           <div class="comments">
-            <p v-for="comment in dream.comments" :key="comment" class="comment">{{ comment }}</p>
+            <p v-for="(comment, idx) in dream.comments" :key="idx" class="comment">{{ comment }}</p>
           </div>
 
           <form class="comment-form" @submit.prevent="addComment(dream)">
@@ -42,10 +44,8 @@
       </article>
     </section>
 
-    <!-- 👇 新增：右下角圆形加号按钮 -->
     <button class="add-dream-btn" @click="showModal = true">+</button>
 
-    <!-- 👇 新增：梦境输入弹窗 -->
     <div class="dream-modal-overlay" v-if="showModal" @click.self="showModal = false">
       <div class="dream-modal">
         <h3>分享你的梦境</h3>
@@ -64,7 +64,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { filmItems } from '../data/exhibits'
+import { dreamItems } from '../data/exhibits'
 
 const authors = ['夜航者', '折叠钟表', '蓝色放映员', '醒来之前']
 const starterComments = [
@@ -75,7 +75,7 @@ const starterComments = [
 ]
 
 const dreams = reactive(
-  filmItems.map((item, index) => ({
+  dreamItems.map((item, index) => ({
     ...item,
     author: authors[index],
     likes: 128 + index * 37,
@@ -85,6 +85,14 @@ const dreams = reactive(
   }))
 )
 
+const getDreamStyle = (dream) => {
+  const bg = dream.background
+  if (bg && bg.startsWith('/')) {
+    return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+  }
+  return { background: bg }
+}
+
 const addComment = (dream) => {
   const text = dream.draft.trim()
   if (!text) return
@@ -92,31 +100,26 @@ const addComment = (dream) => {
   dream.draft = ''
 }
 
-// 👇 新增：控制弹窗显示/隐藏
 const showModal = ref(false)
-// 👇 新增：存储用户输入的梦境内容
 const newDream = ref({
   title: '',
   description: ''
 })
 
-// 👇 新增：提交新梦境的函数
 const submitDream = () => {
   const dream = {
-    id: Date.now(), // 用时间戳生成唯一ID
+    id: Date.now(),
     title: newDream.value.title,
     description: newDream.value.description,
-    author: '匿名造梦者', // 可修改为用户名
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // 默认背景色
+    author: '匿名造梦者',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     subtitle: '新梦境',
     likes: 0,
     collected: false,
     comments: [],
     draft: ''
   }
-  // 把新梦境添加到列表最前面
   dreams.unshift(dream)
-  // 关闭弹窗并清空输入
   showModal.value = false
   newDream.value = { title: '', description: '' }
 }
@@ -186,11 +189,21 @@ h1 {
   overflow: hidden;
 }
 
+.dream-visual-link {
+  display: block;
+  text-decoration: none;
+}
+
 .dream-visual {
-  min-height: 190px;
+  min-height: 380px;
   display: flex;
   align-items: flex-end;
   padding: 22px;
+  transition: transform 0.3s ease;
+}
+
+.dream-visual-link:hover .dream-visual {
+  transform: scale(1.02);
 }
 
 .dream-visual span {
@@ -199,161 +212,192 @@ h1 {
   background: rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
+  letter-spacing: 1px;
 }
 
 .dream-body {
-  padding: 22px;
+  padding: 24px;
 }
 
 .dream-heading {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 14px;
 }
 
 h2 {
-  margin: 7px 0 0;
-  font-size: clamp(24px, 3vw, 34px);
-}
-
-.collect-btn,
-.comment-form button {
-  border: 0;
-  border-radius: 999px;
+  margin: 4px 0 0;
+  font-size: clamp(20px, 2.5vw, 28px);
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.16);
-  cursor: pointer;
 }
 
 .collect-btn {
-  flex: 0 0 auto;
-  padding: 8px 14px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 13px;
+}
+
+.collect-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .collect-btn.active {
-  background: rgba(59, 130, 246, 0.72);
+  background: rgba(170, 140, 255, 0.28);
+  border-color: rgba(170, 140, 255, 0.5);
+  color: #c4b5fd;
 }
 
 .dream-desc {
-  margin: 16px 0;
+  margin: 0 0 16px;
+  font-size: 15px;
   line-height: 1.7;
 }
 
 .meta-row {
   display: flex;
-  gap: 14px;
+  gap: 16px;
+  margin-bottom: 14px;
   font-size: 13px;
+  opacity: 0.75;
 }
 
 .comments {
-  min-height: 44px;
-  margin: 16px 0;
-  display: grid;
-  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+  margin-bottom: 12px;
 }
 
 .comment {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .comment-form {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .comment-form input {
-  min-width: 0;
   flex: 1;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 10px 16px;
   border-radius: 999px;
-  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
-  background: rgba(2, 6, 23, 0.34);
+  font-size: 14px;
   outline: none;
 }
 
 .comment-form input::placeholder {
-  color: rgba(255, 255, 255, 0.48);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.comment-form input:focus {
+  border-color: rgba(170, 140, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .comment-form button {
-  padding: 10px 16px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
 }
 
-/* 👇 新增：右下角加号按钮样式 */
+.comment-form button:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
 .add-dream-btn {
   position: fixed;
-  right: 32px;
-  bottom: 32px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%; /* 强制圆形，确保宽高一致 */
-  border: none;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  right: 30px;
+  bottom: 30px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 180, 220, 0.2);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 28px;
-  /* 👇 核心居中代码 */
-  display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: center;     /* 垂直居中 */
-  line-height: 1; /* 防止文本行高偏移 */
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
   z-index: 100;
+  line-height: 1;
 }
 
 .add-dream-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.08);
 }
 
-/* 👇 新增：弹窗遮罩层 */
 .dream-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  display: grid;
+  place-items: center;
   z-index: 200;
+  backdrop-filter: blur(4px);
 }
 
-/* 👇 新增：弹窗主体（磨砂玻璃风格） */
 .dream-modal {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: min(520px, 92vw);
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.96), rgba(30, 30, 60, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 20px;
   padding: 32px;
-  width: min(90%, 500px);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
 }
 
 .dream-modal h3 {
-  margin: 0 0 24px;
-  color: white;
-  font-size: 24px;
+  margin: 0 0 22px;
+  color: #ffffff;
+  font-size: 22px;
+  text-align: center;
+}
+
+.dream-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .dream-modal input,
 .dream-modal textarea {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 14px 18px;
   border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  background: rgba(2, 6, 23, 0.34);
-  color: white;
-  font-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 15px;
   outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.dream-modal input::placeholder,
+.dream-modal textarea::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.dream-modal input:focus,
+.dream-modal textarea:focus {
+  border-color: rgba(170, 140, 255, 0.55);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dream-modal textarea {
@@ -361,42 +405,44 @@ h2 {
   resize: vertical;
 }
 
-.dream-modal input::placeholder,
-.dream-modal textarea::placeholder {
-  color: rgba(255, 255, 255, 0.48);
-}
-
 .modal-buttons {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  margin-top: 8px;
 }
 
 .modal-buttons button {
-  padding: 10px 24px;
+  flex: 1;
+  padding: 13px;
   border-radius: 999px;
-  border: none;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
 
 .modal-buttons button:first-child {
-  background: rgba(255, 255, 255, 0.16);
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.modal-buttons button:first-child:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .modal-buttons button:last-child {
-  background: rgba(59, 130, 246, 0.72);
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
 }
 
-.modal-buttons button:hover {
-  transform: translateY(-2px);
+.modal-buttons button:last-child:hover {
+  opacity: 0.88;
 }
 
-@media (max-width: 820px) {
+@media (max-width: 768px) {
   .dreams-page {
-    padding: 96px 12px 36px;
+    padding: 92px 16px 80px;
   }
 
   .hero-card {
@@ -407,13 +453,21 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  /* 移动端适配按钮位置 */
-  .add-dream-btn {
-    right: 16px;
-    bottom: 16px;
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
+  .dream-visual {
+    min-height: 280px;
+  }
+
+  .dream-body {
+    padding: 18px;
+  }
+
+  .dream-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .collect-btn {
+    align-self: flex-start;
   }
 }
 </style>

@@ -4,7 +4,7 @@
       <router-link v-slot="{ href, navigate }" :to="detailTo" custom>
         <a ref="cardRef" :href="href" class="section" @click="navigate">
           <div class="global-bg" :style="{ backgroundImage: `url(${globalBackground})` }"></div>
-          <div ref="bgRef" class="bg" :style="{ background: bg }"></div>
+          <div ref="bgRef" class="bg" :style="bgStyle"></div>
           <div class="overlay"></div>
 
           <div ref="contentRef" class="content">
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -37,6 +37,13 @@ const props = defineProps({
     type: String,
     default: '/src/assets/background.jpg'
   }
+})
+
+const bgStyle = computed(() => {
+  if (props.bg && props.bg.startsWith('/')) {
+    return { backgroundImage: `url(${props.bg})` }
+  }
+  return { background: props.bg }
 })
 
 const sectionRef = ref(null)
