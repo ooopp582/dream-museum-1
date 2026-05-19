@@ -3,26 +3,31 @@
     <header class="intro">
       <p class="label">ART GALLERY</p>
       <h1>画作馆</h1>
-      <p>在这里，你可以欣赏到那些充满想象力和创造力的画作，每一幅作品都承载着艺术家对梦境的独特诠释。</p>
+      <p>
+        在这里，你可以欣赏到那些充满想象力和创造力的画作，每一幅作品都承载着艺术家对梦境的独特诠释。单击大画卡会展开四个馆藏入口，再选择其一进入详细介绍。
+      </p>
     </header>
 
-    <SectionBlock
+    <ArtExpandSection
       v-for="(item, index) in artItems"
       :key="item.id"
-      :title="item.title"
-      :tag="item.subtitle"
-      :desc="item.description"
-      :bg="item.background"
-      :detail-to="`/art/${item.id}`"
+      :item="item"
+      :tiles="artItems"
       :index="index"
+      :expanded="expandedId === item.id"
       global-background="/src/assets/background.jpg"
+      @expand="expandedId = $event"
+      @collapse="expandedId = null"
     />
   </div>
 </template>
 
 <script setup>
-import SectionBlock from '../components/SectionBlock.vue'
+import { ref } from 'vue'
+import ArtExpandSection from '../components/ArtExpandSection.vue'
 import { artItems } from '../data/exhibits'
+
+const expandedId = ref(null)
 </script>
 
 <style scoped>
