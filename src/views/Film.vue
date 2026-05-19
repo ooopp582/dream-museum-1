@@ -34,10 +34,11 @@ import { filmItems } from '../data/exhibits'
   gap: 0;
   min-height: 100vh;
   overflow-x: clip;
+  /* 与 App.vue / .page-main 一致：路由淡出时与底层 cover 对齐，避免与文字「各动各的」 */
   background-image:
-    linear-gradient(rgba(6, 8, 15, 0.48), rgba(6, 8, 15, 0.68)),
+    linear-gradient(rgba(6, 8, 15, 0.58), rgba(6, 8, 15, 0.72)),
     url('/src/assets/background.jpg');
-  background-size: auto, 100% 100%;
+  background-size: auto, cover;
   background-repeat: no-repeat, no-repeat;
   background-position: center center, center bottom;
 }

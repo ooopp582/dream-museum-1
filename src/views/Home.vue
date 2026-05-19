@@ -1,5 +1,8 @@
 <template>
-  <section class="home-page">
+  <section ref="homePageRef" class="home-page">
+    <div ref="rainHostRef" class="home-rain-host" aria-hidden="true"></div>
+    <div class="home-atmosphere" aria-hidden="true"></div>
+
     <div class="top-actions">
       <router-link to="/profile" class="icon-link" aria-label="个人中心">◎</router-link>
       <router-link to="/film" class="icon-link" aria-label="进入展厅">→</router-link>
@@ -10,13 +13,6 @@
     </div>
 
     <div class="home-content">
-     <div class="title-lockup">
-      <img src="../assets/title2.png" 
-       alt="梦境博物馆" 
-      class="title-image">
-      <p class="chinese-title">梦境博物馆</p>
-</div>
-
       <nav class="module-grid" aria-label="模块入口">
         <router-link v-for="item in modules" :key="item.to" :to="item.to" class="module-button">
           <span class="module-title">{{ item.title }}</span>
@@ -28,28 +24,49 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
+const rainHostRef = ref(null)
+const homePageRef = ref(null)
+let teardownRain = () => {}
+let teardownParticles = () => {}
+
 const modules = [
   {
     title: '电影馆',
     desc: '进入梦境叙事展厅',
-    to: '/film'
+    to: '/film',
   },
   {
     title: '画作馆',
     desc: '浏览视觉记忆切片',
-    to: '/art'
+    to: '/art',
   },
   {
     title: '大众梦境',
     desc: '查看共享梦境留言',
-    to: '/dreams'
+    to: '/dreams',
   },
   {
     title: '个人中心',
     desc: '管理收藏与记录',
-    to: '/profile'
-  }
+    to: '/profile',
+  },
 ]
+
+onMounted(async () => {
+  const { mountHomeRainPixi } = await import('../effects/homeRainPixi.js')
+  const { mountHomeMouseParticles } = await import('../effects/homeMouseParticles.js')
+  teardownRain = await mountHomeRainPixi(rainHostRef.value, {
+    interactionRoot: homePageRef.value,
+  })
+  teardownParticles = mountHomeMouseParticles()
+})
+
+onBeforeUnmount(() => {
+  teardownParticles()
+  teardownRain()
+})
 </script>
 
 <style scoped>
@@ -61,19 +78,28 @@ const modules = [
   overflow: hidden;
   isolation: isolate;
   color: #ffffff;
-  background-image:
-    linear-gradient(rgba(8, 15, 30, 0.18), rgba(8, 15, 30, 0.34)),
-    url('/src/assets/background.jpg');
-  background-size: auto, cover;
-  background-repeat: no-repeat, no-repeat;
-  background-position: center center, center center;
+  background-image: linear-gradient(rgba(8, 15, 30, 0.18), rgba(8, 15, 30, 0.34));
 }
 
-.home-page::before {
+.home-rain-host {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-atmosphere::before {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: -2;
   background:
     radial-gradient(ellipse at 32% 28%, rgba(244, 114, 182, 0.26), transparent 34%),
     radial-gradient(ellipse at 72% 34%, rgba(125, 211, 252, 0.24), transparent 36%),
@@ -82,11 +108,10 @@ const modules = [
   mix-blend-mode: screen;
 }
 
-.home-page::after {
+.home-atmosphere::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: -2;
   background-image:
     radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.95) 0 1px, transparent 2px),
     radial-gradient(circle at 84% 12%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
@@ -95,7 +120,6 @@ const modules = [
     radial-gradient(circle at 94% 48%, rgba(255, 255, 255, 0.72) 0 1px, transparent 2px);
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
   opacity: 0.72;
-  pointer-events: none;
 }
 
 .top-actions {
@@ -105,7 +129,7 @@ const modules = [
   right: 24px;
   display: flex;
   justify-content: space-between;
-  z-index: 3;
+  z-index: 5;
 }
 
 .icon-link {
@@ -125,7 +149,7 @@ const modules = [
   inset: 0;
   display: grid;
   place-items: center;
-  z-index: -1;
+  z-index: 3;
 }
 
 .moon-stage::before {
@@ -187,13 +211,12 @@ const modules = [
 }
 
 .home-content {
+  position: relative;
+  z-index: 4;
   width: min(860px, calc(100vw - 40px));
   text-align: center;
-  padding: 52px 0 32px;
-}
-
-.title-lockup {
-  margin-bottom: 58px;
+  /* 为 PIXI 标题区多留空，四格按钮靠下，避免裁切标题 */
+  padding: clamp(220px, 36vh, 400px) 0 32px;
 }
 
 h1 {
@@ -208,17 +231,6 @@ h1 {
     0 0 8px rgba(255, 255, 255, 0.82),
     0 0 22px rgba(186, 230, 253, 0.62),
     0 7px 30px rgba(0, 0, 0, 0.62);
-}
-
-.chinese-title {
-  margin: 20px auto 0;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: clamp(22px, 3vw, 3px);
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
-  text-shadow:
-    0 0 12px rgba(255, 255, 255, 0.48),
-    0 4px 18px rgba(0, 0, 0, 0.72);
 }
 
 .module-grid {
@@ -272,11 +284,7 @@ h1 {
   }
 
   .home-content {
-    padding-top: 34px;
-  }
-
-  .title-lockup {
-    margin-bottom: 42px;
+    padding-top: clamp(170px, 30vh, 300px);
   }
 
   .module-grid {
@@ -288,16 +296,6 @@ h1 {
   .module-grid {
     grid-template-columns: 1fr;
   }
-}
-.title-image {
-  max-width: 200%;
-  max-height: 200px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
-  margin-top: 10px;
-  margin-left: -00px;
-  margin-bottom: 0px;
-  transform: rotate(5deg);
 }
 /* 模块按钮 - 发光毛玻璃效果 */
 .module-button {

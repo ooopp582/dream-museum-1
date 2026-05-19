@@ -145,24 +145,24 @@ onMounted(() => {
   )
 
   glowTween = gsap.fromTo(
-  cardRef.value,
-  { 
-    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1), 0 14px 34px rgba(0,0,0,0.34), 0 0 15px rgba(170,140,255,0.08)' 
-  },
-  { 
-    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.15), 0 38px 88px rgba(0,0,0,0.56), 0 0 30px rgba(170,140,255,0.15)',
-    ease: 'none',
-    scrollTrigger: {
-      trigger: sectionRef.value,
-      start: 'top 78%',
-      end: 'bottom 18%',
-      scrub: true
-    }
-  }
-)
+    cardRef.value,
+    {
+      boxShadow:
+        'inset 0 1px 2px rgba(255,255,255,0.1), 0 14px 34px rgba(0,0,0,0.34), 0 0 15px rgba(170,140,255,0.08)'
+    },
+    {
+      boxShadow:
+        'inset 0 2px 4px rgba(255,255,255,0.15), 0 38px 88px rgba(0,0,0,0.56), 0 0 30px rgba(170,140,255,0.15)',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: sectionRef.value,
+        start: 'top 78%',
+        end: 'bottom 18%',
+        scrub: true
+      }
     }
   )
-
+})
 
 onUnmounted(() => {
   for (const tween of [transformTween, depthTween, introTween, parallaxTween, glowTween]) {

@@ -38,6 +38,11 @@ const routes = [
     component: Profile
   },
   {
+    path: '/film/:id/info',
+    name: 'FilmInfo',
+    component: ExhibitDetail
+  },
+  {
     path: '/film/:id',
     name: 'FilmDetail',
     component: ExhibitDetail

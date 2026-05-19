@@ -130,9 +130,9 @@ const submitDream = () => {
   min-height: 100vh;
   padding: 116px 24px 56px;
   background-image:
-    linear-gradient(rgba(6, 8, 15, 0.42), rgba(6, 8, 15, 0.68)),
+    linear-gradient(rgba(6, 8, 15, 0.58), rgba(6, 8, 15, 0.72)),
     url('/src/assets/background.jpg');
-  background-size: auto, 100% 100%;
+  background-size: auto, cover;
   background-repeat: no-repeat, no-repeat;
   background-position: center center, center bottom;
 }
