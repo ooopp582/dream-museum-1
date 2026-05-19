@@ -73,7 +73,8 @@
                 :ref="(el) => setTileRef(el, tile.id)"
                 :to="`/art/${tile.id}`"
                 class="sub-tile-float"
-                :class="[`sub-tile-float--${tileAnchorIndex(tile.id)}`, { 'is-current': tile.id === item.id }]"
+                :class="{ 'is-current': tile.id === item.id }"
+                :style="getTileStyle(tile.id)"
               >
                 <div class="sub-tile-bg" :style="{ backgroundImage: `url(${tile.background})` }"></div>
                 <div class="sub-tile-shade"></div>
@@ -133,18 +134,51 @@ const contentRef = ref(null)
 
 const svgBox = ref({ w: 0, h: 0 })
 const lineSegments = ref([])
+const tileLayout = ref({})
 
 const tileRefMap = {}
+const resolveDomEl = (el) => {
+  if (!el) return null
+  if (el instanceof HTMLElement) return el
+  const root = el.$el
+  if (root instanceof HTMLElement) return root
+  return null
+}
+
 const setTileRef = (el, id) => {
-  if (el) tileRefMap[id] = el
+  const node = resolveDomEl(el)
+  if (node) tileRefMap[id] = node
   else delete tileRefMap[id]
 }
 
-const tileOrder = computed(() => props.tiles.map((t) => t.id))
+/** 环绕起始角（略偏左上），四块均匀分布 */
+const ORBIT_START = -Math.PI / 2 - 0.42
 
-const tileAnchorIndex = (id) => {
-  const i = tileOrder.value.indexOf(id)
-  return i < 0 ? 0 : i
+const estimateTileSize = (stageWidth) => {
+  const w = Math.min(220, stageWidth * 0.19)
+  return { w, h: 112 }
+}
+
+const getTileStyle = (id) => {
+  const pos = tileLayout.value[id]
+  if (!pos) {
+    return { opacity: 0, pointerEvents: 'none' }
+  }
+  return {
+    left: `${pos.left}px`,
+    top: `${pos.top}px`,
+    opacity: 1,
+    pointerEvents: 'auto',
+    '--orbit-tilt': `${pos.tilt}deg`
+  }
+}
+
+const getCardEdgePoint = (cx, cy, hw, hh, tx, ty) => {
+  const dx = tx - cx
+  const dy = ty - cy
+  const denom = Math.max(Math.abs(dx) / hw, Math.abs(dy) / hh, 0.001)
+  const scale = 0.96 / denom
+  return { x: cx + dx * scale, y: cy + dy * scale }
 }
 
 let transformTween = null
@@ -154,39 +188,84 @@ let parallaxTween = null
 let glowTween = null
 let tickerFn = null
 
-const updateConnectorLines = () => {
+const updateOrbitLayout = () => {
   if (!props.expanded || !pinStageRef.value || !cardRef.value) return
 
-  const stage = pinStageRef.value.getBoundingClientRect()
-  const card = cardRef.value.getBoundingClientRect()
+  try {
+    const stage = pinStageRef.value.getBoundingClientRect()
+    const card = cardRef.value.getBoundingClientRect()
+    const count = props.tiles.length
+    if (!count || stage.width < 1 || stage.height < 1 || card.width < 1) return
 
-  svgBox.value = { w: stage.width, h: stage.height }
+    svgBox.value = { w: stage.width, h: stage.height }
 
-  const cx = card.left + card.width / 2 - stage.left
-  const cy = card.top + card.height / 2 - stage.top
+    const cx = card.left + card.width / 2 - stage.left
+    const cy = card.top + card.height / 2 - stage.top
+    const hw = card.width / 2
+    const hh = card.height / 2
 
-  const next = []
-  for (const tile of props.tiles) {
-    const el = tileRefMap[tile.id]
-    if (!el) continue
-    const t = el.getBoundingClientRect()
-    const tx = t.left + t.width / 2 - stage.left
-    const ty = t.top + t.height / 2 - stage.top
-    next.push({ x1: cx, y1: cy, x2: tx, y2: ty })
+    const sampleEl = resolveDomEl(tileRefMap[props.tiles[0]?.id])
+    const sampleRect = sampleEl?.getBoundingClientRect()
+    const fallback = estimateTileSize(stage.width)
+    const tileW = sampleRect?.width > 0 ? sampleRect.width : fallback.w
+    const tileH = sampleRect?.height > 0 ? sampleRect.height : fallback.h
+    const gap = Math.max(18, Math.min(stage.width, stage.height) * 0.028)
+    const radiusX = hw + tileW / 2 + gap
+    const radiusY = hh + tileH / 2 + gap
+    const pad = 10
+
+    const layouts = {}
+    const lines = []
+
+    props.tiles.forEach((tile, index) => {
+      const angle = ORBIT_START + (index * 2 * Math.PI) / count
+      let left = cx + Math.cos(angle) * radiusX - tileW / 2
+      let top = cy + Math.sin(angle) * radiusY - tileH / 2
+
+      const maxLeft = Math.max(pad, stage.width - tileW - pad)
+      const maxTop = Math.max(pad, stage.height - tileH - pad)
+      left = Math.min(maxLeft, Math.max(pad, left))
+      top = Math.min(maxTop, Math.max(pad, top))
+
+      const tileEl = resolveDomEl(tileRefMap[tile.id])
+      const tileRect = tileEl?.getBoundingClientRect()
+      const tx = tileRect?.width
+        ? tileRect.left + tileRect.width / 2 - stage.left
+        : left + tileW / 2
+      const ty = tileRect?.height
+        ? tileRect.top + tileRect.height / 2 - stage.top
+        : top + tileH / 2
+      const edge = getCardEdgePoint(cx, cy, hw, hh, tx, ty)
+      const tilt = (angle * 180) / Math.PI + 90
+
+      layouts[tile.id] = { left, top, tilt }
+      lines.push({ x1: edge.x, y1: edge.y, x2: tx, y2: ty })
+    })
+
+    tileLayout.value = layouts
+    lineSegments.value = lines
+  } catch {
+    /* 避免 ticker 因单次测量失败而中断 */
   }
-  lineSegments.value = next
+}
+
+const scheduleLayout = () => {
+  nextTick(() => {
+    updateOrbitLayout()
+    requestAnimationFrame(() => {
+      updateOrbitLayout()
+      ScrollTrigger.refresh()
+    })
+  })
 }
 
 const startLineLoop = () => {
   stopLineLoop()
   tickerFn = () => {
-    updateConnectorLines()
+    updateOrbitLayout()
   }
   gsap.ticker.add(tickerFn)
-  nextTick(() => {
-    updateConnectorLines()
-    ScrollTrigger.refresh()
-  })
+  scheduleLayout()
 }
 
 const stopLineLoop = () => {
@@ -195,11 +274,12 @@ const stopLineLoop = () => {
     tickerFn = null
   }
   lineSegments.value = []
+  tileLayout.value = {}
   svgBox.value = { w: 0, h: 0 }
 }
 
 const onResize = () => {
-  if (props.expanded) updateConnectorLines()
+  if (props.expanded) updateOrbitLayout()
 }
 
 watch(
@@ -213,7 +293,8 @@ watch(
       stopLineLoop()
       ScrollTrigger.refresh()
     }
-  }
+  },
+  { flush: 'post' }
 )
 
 const onSectionClick = (event) => {
@@ -378,6 +459,7 @@ onUnmounted(() => {
   display: grid;
   place-items: center;
   pointer-events: none;
+  overflow: visible;
 }
 
 .orbit-dim {
@@ -394,6 +476,7 @@ onUnmounted(() => {
   inset: 0;
   z-index: 3;
   pointer-events: none;
+  overflow: visible;
 }
 
 .orbit-lines {
@@ -415,6 +498,7 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  overflow: visible;
 }
 
 .section {
@@ -557,15 +641,17 @@ h2 {
     0 0 1px rgba(255, 255, 255, 0.12) inset;
   pointer-events: auto;
   cursor: pointer;
+  transform: rotate(var(--orbit-tilt, 0deg));
   transition:
-    transform 0.28s ease,
     border-color 0.28s ease,
-    box-shadow 0.28s ease;
+    box-shadow 0.28s ease,
+    filter 0.28s ease;
+  will-change: left, top;
 }
 
 .sub-tile-float:hover {
-  transform: translateY(-3px) scale(1.02);
   border-color: rgba(255, 255, 255, 0.55);
+  filter: brightness(1.06);
   box-shadow:
     0 22px 50px rgba(0, 0, 0, 0.5),
     0 0 26px rgba(170, 140, 255, 0.22);
@@ -576,31 +662,6 @@ h2 {
   box-shadow:
     0 16px 44px rgba(0, 0, 0, 0.48),
     0 0 22px rgba(134, 239, 172, 0.25);
-}
-
-/* 四角悬浮：相对舞台锚点 */
-.sub-tile-float--0 {
-  top: 5%;
-  left: 3%;
-}
-
-.sub-tile-float--1 {
-  top: 5%;
-  right: 3%;
-  left: auto;
-}
-
-.sub-tile-float--2 {
-  bottom: 8%;
-  left: 3%;
-  top: auto;
-}
-
-.sub-tile-float--3 {
-  bottom: 8%;
-  right: 3%;
-  left: auto;
-  top: auto;
 }
 
 .sub-tile-bg {
@@ -684,10 +745,9 @@ h2 {
   opacity: 0;
 }
 
-.orbit-fade-enter-from .sub-tile-float,
-.orbit-fade-leave-to .sub-tile-float {
-  transform: scale(0.92);
-  opacity: 0;
+.orbit-fade-enter-active .sub-tile-float,
+.orbit-fade-leave-active .sub-tile-float {
+  transition: opacity 0.38s ease, filter 0.38s ease;
 }
 
 @media (max-width: 768px) {
@@ -719,29 +779,9 @@ h2 {
   }
 
   .sub-tile-float {
-    width: min(140px, 36vw);
+    width: min(148px, 34vw);
     min-height: 88px;
     border-radius: 12px;
-  }
-
-  .sub-tile-float--0 {
-    top: 3%;
-    left: 2%;
-  }
-
-  .sub-tile-float--1 {
-    top: 3%;
-    right: 2%;
-  }
-
-  .sub-tile-float--2 {
-    bottom: 4%;
-    left: 2%;
-  }
-
-  .sub-tile-float--3 {
-    bottom: 4%;
-    right: 2%;
   }
 }
 </style>
