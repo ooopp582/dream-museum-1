@@ -12,6 +12,73 @@
     </div>
 
     <!-- 右侧搜索框（放大镜已缩小嵌入） -->
+    <div class="music-player" @click.stop>
+      <audio
+        ref="audioRef"
+        :src="currentTrack.src"
+        preload="metadata"
+        @loadedmetadata="syncDuration"
+        @timeupdate="syncTime"
+        @ended="nextTrack"
+      ></audio>
+
+      <button class="music-icon-btn" type="button" aria-label="上一首" @click="previousTrack">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 5v14l-9-7 9-7Z"></path>
+          <path d="M7 5h2v14H7z"></path>
+        </svg>
+      </button>
+
+      <button class="music-play-btn" type="button" :aria-label="isPlaying ? '暂停音乐' : '播放音乐'" @click="togglePlay">
+        <svg v-if="!isPlaying" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 5v14l11-7L8 5Z"></path>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 5h4v14H7z"></path>
+          <path d="M13 5h4v14h-4z"></path>
+        </svg>
+      </button>
+
+      <button class="music-icon-btn" type="button" aria-label="下一首" @click="nextTrack">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5v14l9-7-9-7Z"></path>
+          <path d="M15 5h2v14h-2z"></path>
+        </svg>
+      </button>
+
+      <div class="music-meta">
+        <span class="music-title">{{ currentTrack.title }}</span>
+        <input
+          class="music-progress"
+          type="range"
+          min="0"
+          :max="duration || 0"
+          step="0.1"
+          :value="currentTime"
+          aria-label="音乐进度"
+          @input="seekTrack"
+        />
+      </div>
+
+      <span class="music-time">{{ formattedTime }}</span>
+
+      <div class="music-volume">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9H4Z"></path>
+          <path d="M16 8c1.2 1 1.8 2.3 1.8 4s-.6 3-1.8 4"></path>
+        </svg>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          v-model.number="volume"
+          aria-label="音乐音量"
+          @input="setVolume"
+        />
+      </div>
+    </div>
+
     <div class="search-container">
       <div class="search-box">
         <!-- 筛选下拉按钮 -->
@@ -51,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, nextTick, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -60,6 +127,103 @@ const router = useRouter()
 const keyword = ref('')
 const searchType = ref('全部')
 const showFilter = ref(false)
+const audioRef = ref(null)
+const trackIndex = ref(0)
+const isPlaying = ref(false)
+const currentTime = ref(0)
+const duration = ref(0)
+const volume = ref(0.55)
+
+const tracks = [
+  { title: 'Dream Drift', src: '/src/assets/video-shaonianpai.mp4' },
+  { title: 'Night Gallery', src: '/src/assets/video-heitiane.mp4' },
+  { title: 'Inner Land', src: '/src/assets/video-neilu.mp4' },
+  { title: 'Glass Room', src: '/src/assets/video-lifangti.mp4' }
+]
+
+const currentTrack = computed(() => tracks[trackIndex.value])
+
+const formatTime = (seconds) => {
+  if (!Number.isFinite(seconds)) return '0:00'
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60).toString().padStart(2, '0')
+  return `${minutes}:${remainingSeconds}`
+}
+
+const formattedTime = computed(() => {
+  const current = formatTime(currentTime.value)
+  const total = duration.value ? formatTime(duration.value) : '0:00'
+  return `${current}/${total}`
+})
+
+const playAudio = async () => {
+  if (!audioRef.value) return
+
+  try {
+    await audioRef.value.play()
+    isPlaying.value = true
+  } catch {
+    isPlaying.value = false
+  }
+}
+
+const togglePlay = () => {
+  if (!audioRef.value) return
+
+  if (isPlaying.value) {
+    audioRef.value.pause()
+    isPlaying.value = false
+    return
+  }
+
+  playAudio()
+}
+
+const switchTrack = (direction) => {
+  const wasPlaying = isPlaying.value
+  trackIndex.value = (trackIndex.value + direction + tracks.length) % tracks.length
+  currentTime.value = 0
+  duration.value = 0
+
+  nextTick(() => {
+    if (!audioRef.value) return
+
+    audioRef.value.volume = volume.value
+    audioRef.value.load()
+    if (wasPlaying) {
+      playAudio()
+    }
+  })
+}
+
+const previousTrack = () => {
+  switchTrack(-1)
+}
+
+const nextTrack = () => {
+  switchTrack(1)
+}
+
+const syncDuration = () => {
+  duration.value = audioRef.value?.duration || 0
+}
+
+const syncTime = () => {
+  currentTime.value = audioRef.value?.currentTime || 0
+}
+
+const seekTrack = (event) => {
+  if (!audioRef.value) return
+
+  const nextTime = Number(event.target.value)
+  audioRef.value.currentTime = nextTime
+  currentTime.value = nextTime
+}
+
+const setVolume = () => {
+  if (!audioRef.value) return
+  audioRef.value.volume = volume.value
+}
 
 // 选择筛选类型
 const chooseType = (label, value) => {
@@ -80,7 +244,12 @@ const closeMenu = (e) => {
   }
 }
 
-onMounted(() => document.addEventListener('click', closeMenu))
+watch(volume, setVolume)
+
+onMounted(() => {
+  document.addEventListener('click', closeMenu)
+  setVolume()
+})
 onUnmounted(() => document.removeEventListener('click', closeMenu))
 </script>
 
@@ -154,6 +323,174 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
 }
 
 /* ====================== 搜索框样式 ====================== */
+.music-player {
+  flex: 1 1 360px;
+  max-width: 520px;
+  min-width: 300px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.music-icon-btn,
+.music-play-btn {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 0;
+  color: rgba(255, 255, 255, 0.86);
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.music-player .music-icon-btn,
+.music-player .music-play-btn,
+.music-player .music-icon-btn:hover,
+.music-player .music-play-btn:hover,
+.music-player .music-icon-btn:focus,
+.music-player .music-play-btn:focus,
+.music-player .music-icon-btn:active,
+.music-player .music-play-btn:active {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.music-play-btn {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: transparent;
+}
+
+.music-icon-btn:hover,
+.music-play-btn:hover {
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.music-icon-btn svg,
+.music-play-btn svg,
+.music-volume svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.music-meta {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.music-title {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-progress,
+.music-volume input {
+  width: 100%;
+  height: 2px;
+  accent-color: #d8b4fe;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.music-progress::-webkit-slider-runnable-track,
+.music-volume input::-webkit-slider-runnable-track {
+  height: 1px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: none;
+}
+
+.music-progress::-webkit-slider-thumb,
+.music-volume input::-webkit-slider-thumb {
+  width: 6px;
+  height: 6px;
+  margin-top: -2.5px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.music-progress::-moz-range-track,
+.music-volume input::-moz-range-track {
+  height: 1px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: none;
+}
+
+.music-progress::-moz-range-thumb,
+.music-volume input::-moz-range-thumb {
+  width: 6px;
+  height: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: none;
+}
+
+.music-time {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.music-volume {
+  width: 88px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.music-volume input {
+  min-width: 0;
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -262,6 +599,18 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   }
 
   /* 小屏幕搜索框缩小，不隐藏 */
+  .music-player {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .music-time,
+  .music-volume {
+    display: none;
+  }
+
   .search-box input {
     width: 80px;
   }
