@@ -209,7 +209,7 @@ const updateOrbitLayout = () => {
     const fallback = estimateTileSize(stage.width)
     const tileW = sampleRect?.width > 0 ? sampleRect.width : fallback.w
     const tileH = sampleRect?.height > 0 ? sampleRect.height : fallback.h
-    const gap = Math.max(18, Math.min(stage.width, stage.height) * 0.028)
+    const gap = Math.max(56, Math.min(stage.width, stage.height) * 0.072)
     const radiusX = hw + tileW / 2 + gap
     const radiusY = hh + tileH / 2 + gap
     const pad = 10
@@ -218,7 +218,10 @@ const updateOrbitLayout = () => {
     const lines = []
 
     props.tiles.forEach((tile, index) => {
-      const angle = ORBIT_START + (index * 2 * Math.PI) / count
+      // 将原右下槽位(index=2)调到左上槽位(index=0)
+      // 同时把原左上槽位(index=0)换到右下槽位(index=2)，避免重叠。
+      const slotIndex = index === 2 ? 0 : index === 0 ? 2 : index
+      const angle = ORBIT_START + (slotIndex * 2 * Math.PI) / count
       let left = cx + Math.cos(angle) * radiusX - tileW / 2
       let top = cy + Math.sin(angle) * radiusY - tileH / 2
 
@@ -505,7 +508,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 2;
   display: block;
-  width: min(960px, calc(100vw - 132px));
+  width: min(560px, calc(100vw - 240px));
   aspect-ratio: 16 / 10;
   min-height: auto;
   margin: 0 auto;
@@ -768,7 +771,7 @@ h2 {
   }
 
   .section {
-    width: min(90vw, 560px);
+    width: min(74vw, 460px);
     border-radius: 16px;
   }
 
